@@ -1,4 +1,4 @@
-name: CI/CD Workflow
+name: Read JSON from GitHub Secrets
 
 on:
   push:
@@ -6,28 +6,37 @@ on:
       - main
 
 jobs:
-  build:
+  read-json:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Read JSON File
-        id: read-json
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      
+      - name: Read and Parse JSON from Secret
         run: |
-          echo "Reading JSON File..."
-          jsonData=$(cat config.json)
-          clientId=$(echo $jsonData | jq -r '.clientId')
-          clientSecret=$(echo $jsonData | jq -r '.clientSecret')
-          echo "ClientID: $clientId"
-          echo "ClientSecret: $clientSecret"
-        shell: bash
+          # Read the JSON secret as a string
+          JSON_SECRET=$(echo "${{ secrets.AZURE_CREDENTIALS }}")
+          
+          # Parse the JSON string into a variable
+          PARSED_JSON=$(echo "$JSON_SECRET" | jq -r '.')
 
-      - name: Use Extracted Values
+          # Print the parsed JSON (optional, for verification)
+          echo "$PARSED_JSON" 
+        # Make sure to install jq for parsing JSON (it's pre-installed in GitHub-hosted runners)
+        # You can use apt-get or other package managers if you are not using a GitHub-hosted runner
+        # Example: apt-get install jq
+        
+      - name: Use Parsed JSON Data
         run: |
-          echo "Using ClientID: $CLIENT_ID"
-          echo "Using ClientSecret: $CLIENT_SECRET"
-        env:
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          # Now you can use the parsed JSON data in your workflow
+          echo "Parsed JSON Data: $PARSED_JSON"
+          
+          # Perform actions based on the parsed JSON data
+          # For example, access properties: echo "${PARSED_JSON['property_name']}"
+          
+          # Do something with the JSON data...
