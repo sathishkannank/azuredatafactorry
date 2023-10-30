@@ -1,4 +1,4 @@
-name: Read JSON from GitHub Secrets
+name: ReadJsonFile
 
 on:
   push:
